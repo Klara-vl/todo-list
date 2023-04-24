@@ -1,0 +1,208 @@
+openapi: 3.0.3
+
+info:
+  title: To-do Liste
+  description: Eine API, um auf die To-do Listen zuzugreifen
+  contact:
+    email: k.lehmden@grimme.de
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: '0.1'
+  
+servers:
+  - url: http://127.0.0.1:5000
+  
+paths:
+  /todo-list/{list_id}:
+    get:
+      summary: Liefert alle Einträge einer Todo-Liste zurück.
+      description: Hier werden alle Einträge einer bestimmten To-Do Liste zurück gegeben, mit ID, Name und Beschreibung des Eintrags, um die To-Do Liste anzuzeigen.
+      operationId: getTodoList
+      parameters:
+        - name: list_id
+          in: path
+          description: ID of list that needs to be fetched
+          required: true
+          schema:
+            type: string
+      responses:
+        '404':
+          description: ID fehlerhaft
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEntries'
+    delete:
+      summary: Löscht eine komplette Todo-Liste mit allen Einträgen.
+      description: Löscht eine To-Do Liste mit einer bestimmten ID mit all seinen Einträgen aus der Datenbank.
+      operationId: deleteTodoList
+      parameters:
+        - name: list_id
+          in: path
+          description: ID of the list that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: ID fehlerhaft
+    
+  /todo-list:
+    post:
+      summary: Fügt eine neue Todo-Liste hinzu
+      description: Erstellt eine neue To-Do Liste mit dem angegebenen Namen und Beschreibung und gibt ein To-Do Listen Objekt mit Name, Beschreibung und ID zurück.
+      operationId: postTodoList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToList'
+                
+  /todo-list/{list_id}/entry:
+    post:
+      summary: Fügt einen Eintrag zu einer bestehenden Todo-Liste hinzu.
+      description: Es wird ein neuer Eintrag in der To-Do Liste erstellt, dessen ID mitgegeben wird und liefert ein Eintrags Objekt zurück, mit ID, Name und Beschreibung des Eintrags
+      operationId: postTodoListEntry
+      parameters:
+        - name: list_id
+          in: path
+          description: ID of the list that needs to be deleted
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                beschreibung:
+                  type: string
+              required:
+                - name
+                - beschreibung
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '400':
+          description: Daten fehlerhaft
+        '404':
+          description: ID fehlerhaft
+
+  /todo-list/{list_id}/entry/{entry_id}:
+    put:
+      summary: Aktualisiert einen bestehenden Eintrag.
+      description: Der Eintrag mit der in der URL mitgegebenen ID wird mit den mitgegebenen Daten aus dem Body aktualisiert und es wird der aktualisierte Eintrag zurückgegeben.
+      operationId: updateTodoListEntry
+      parameters:
+        - name: list_id
+          in: path
+          description: ID of the list that needs to be deleted
+          required: true
+          schema:
+            type: string
+        - name: entry_id
+          in: path
+          description: ID of the list that needs to be deleted
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                beschreibung:
+                  type: string
+              required:
+                - name
+                - beschreibung
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '400':
+          description: Daten fehlerhaft
+        '404':
+          description: ID fehlerhaft
+    delete:
+      summary: Löscht einen einzelnen Eintrag einer Todo-Liste. 
+      description: Der Eintag mit der in der URL übergebenen ID wird aus der To-Do Liste und somit komplett aus der Datenbank gelöscht.
+      operationId: deleteTodoListEntry
+      parameters:
+        - name: list_id
+          in: path
+          description: ID of the list that needs to be deleted
+          required: true
+          schema:
+            type: string
+        - name: entry_id
+          in: path
+          description: ID of the list that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: ID fehlerhaft
+
+components:
+  schemas:
+    ToList: 
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    Entry: 
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        beschreibung:
+          type: string
+    ListEntries: 
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entry'
+  
